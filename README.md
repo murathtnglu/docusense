@@ -72,5 +72,8 @@ npm run dev
 - Backend: The backend API is available at http://localhost:8000/docs
 
 
+---
 
+## Screenshots
+You can see the **UI demo images** in my [portfolio website](https://murathatunoglu.com).
 
