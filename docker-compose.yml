@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: docusense
+      POSTGRES_PASSWORD: docusense
+      POSTGRES_DB: docusense
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://docusense:docusense@postgres:5432/docusense
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+
+  worker:
+    build: ./backend
+    command: celery -A app.workers.ingest_worker worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://docusense:docusense@postgres:5432/docusense
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:
+  redis_data:
